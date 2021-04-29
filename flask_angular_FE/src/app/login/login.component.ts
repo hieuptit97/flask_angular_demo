@@ -14,8 +14,8 @@ export class LoginComponent implements OnInit {
   public url_login: string = 'http://127.0.0.1:5000/login';
   notificationCmp: any;
   obj_login: any = {
-    email: '',
-    balance: ''
+    email: 'daleadams@boink.com',
+    balance: '4180'
   }
 
   constructor(private httpClient: HttpClient, private router: Router) { }

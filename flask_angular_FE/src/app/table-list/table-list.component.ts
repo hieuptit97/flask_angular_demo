@@ -6,9 +6,9 @@ import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {catchError, tap} from 'rxjs/operators';
 import {Client} from '../Model/Client';
-import { CdkTableModule } from '@angular/cdk/table';
+import {CdkTableModule} from '@angular/cdk/table';
 import {log} from 'util';
-import { NotificationsComponent } from '../notifications/notifications.component'
+import {NotificationsComponent} from '../notifications/notifications.component'
 import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
 
 export interface UserData {
@@ -26,14 +26,14 @@ export interface UserData {
 })
 
 
-export class TableListComponent implements AfterViewInit  {
+export class TableListComponent implements AfterViewInit {
 
     public url_get: string = 'http://127.0.0.1:5000/dashboard';
     public url_search: string = 'http://127.0.0.1:5000/dashboard/search';
     public url_insert: string = 'http://127.0.0.1:5000/dashboard/insert';
     public url_delete: string = 'http://127.0.0.1:5000/dashboard/delete';
     public url_edit: string = 'http://127.0.0.1:5000/dashboard/edit';
-
+    public author_key_demo: string = 'AuthorizationKeyDemoOfProject123';
     dataSource: MatTableDataSource<Client>;
 
     @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -50,13 +50,13 @@ export class TableListComponent implements AfterViewInit  {
     selectedRowIndex = -1;
     row_selected = null;
     columns: Array<any> = [
-        { name: 'firstname',         label: 'First Name',         cell: (element: any) => `${element.firstname}` },
-        { name: 'lastname',      label: 'Last Name',      cell: (element: any) => `${element.lastname}` },
-        { name: 'age',      label: 'Age',      cell: (element: any) => `${element.age}` },
-        { name: 'address',        label: 'Address',        cell: (element: any) => `${element.address}`},
-        { name: 'email', label: 'Email', cell: (element: any) => `${element.email}`},
-        { name: 'employer', label: 'Employer', cell: (element: any) => `${element.employer}`},
-        { name: 'balance', label: 'Balance', cell: (element: any) => `${element.balance}`},
+        {name: 'firstname', label: 'First Name', cell: (element: any) => `${element.firstname}`},
+        {name: 'lastname', label: 'Last Name', cell: (element: any) => `${element.lastname}`},
+        {name: 'age', label: 'Age', cell: (element: any) => `${element.age}`},
+        {name: 'address', label: 'Address', cell: (element: any) => `${element.address}`},
+        {name: 'email', label: 'Email', cell: (element: any) => `${element.email}`},
+        {name: 'employer', label: 'Employer', cell: (element: any) => `${element.employer}`},
+        {name: 'balance', label: 'Balance', cell: (element: any) => `${element.balance}`},
     ]
     displayedColumns = this.columns.map(c => c.name);
 
@@ -65,25 +65,37 @@ export class TableListComponent implements AfterViewInit  {
 
     obj_edit_client: any = {
         first_name: '',
-        last_name:  '',
+        last_name: '',
         age: '',
         address: '',
         email: '',
         employer: '',
         balance: '',
     }
+    reqHeader = new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': this.author_key_demo
+    });
     constructor(private httpClient: HttpClient, private modalService: NgbModal) {
 
 
     }
 
     getClientData() {
-        return this.httpClient.get(this.url_get).subscribe(data => {
+
+        return this.httpClient.post(this.url_get, null, {headers: this.reqHeader}).subscribe(response => {
             // this.dataSource = data['result'];
             // Assign the data to the data source for the table to render
-            this.dataSource = new MatTableDataSource(data['result']);
-            this.dataSource.paginator = this.paginator;
-            this.dataSource.sort = this.sort;
+            console.log("resssss", response);
+            if (response['result'] !== 999){
+                this.dataSource = new MatTableDataSource(response['result']);
+                this.dataSource.paginator = this.paginator;
+                this.dataSource.sort = this.sort;
+            }
+            else {
+                this.notificationCmp.showNotification('Authentication failed', 'warning');
+            }
+
             this.isLoading = false;
         }, error => this.isLoading = false);
     }
@@ -117,20 +129,26 @@ export class TableListComponent implements AfterViewInit  {
             'employer': this.employer,
             'balance': this.balance,
         }
-        return this.httpClient.post(this.url_search, search_param).subscribe(data => {
+        return this.httpClient.post(this.url_search, search_param, {headers: this.reqHeader}).subscribe(response => {
             // this.dataSource = data['result'];
             // Assign the data to the data source for the table to render
-            console.log('data response search', data);
-            this.dataSource = new MatTableDataSource(data['result']);
-            this.dataSource.paginator = this.paginator;
-            this.dataSource.sort = this.sort;
+            if (response['result'] !== 999){
+                this.dataSource = new MatTableDataSource(response['result']);
+                this.dataSource.paginator = this.paginator;
+                this.dataSource.sort = this.sort;
+            }
+            else {
+                this.notificationCmp.showNotification('Authentication failed', 'warning');
+            }
+
             this.isLoading = false;
         }, error => this.isLoading = false);
 
     };
-    getSelectedRow(row){
-        console.log("rowwww", row);
-        if (row.account_number === this.selectedRowIndex){
+
+    getSelectedRow(row) {
+        console.log('rowwww', row);
+        if (row.account_number === this.selectedRowIndex) {
             this.selectedRowIndex = -1;
             this.row_selected = null;
             return;
@@ -139,7 +157,7 @@ export class TableListComponent implements AfterViewInit  {
         this.row_selected = row;
     }
 
-    handleCreateClient(){
+    handleCreateClient() {
         let insert_param: any = {
             'firstname': this.first_name,
             'lastname': this.last_name,
@@ -149,27 +167,26 @@ export class TableListComponent implements AfterViewInit  {
             'employer': this.employer,
             'balance': this.balance,
         }
-        if (insert_param['firstname'] === '' || insert_param['firstname'] === null ){
+        if (insert_param['firstname'] === '' || insert_param['firstname'] === null) {
             this.notificationCmp.showNotification('Please input first name', 'warning');
             return;
-        }
-        else if (insert_param['lastname'] === '' || insert_param['lastname'] === null ){
+        } else if (insert_param['lastname'] === '' || insert_param['lastname'] === null) {
             this.notificationCmp.showNotification('Please input last name', 'warning');
             return;
-        }
-        else if (insert_param['age'] === '' || insert_param['age'] === null ){
+        } else if (insert_param['age'] === '' || insert_param['age'] === null) {
             this.notificationCmp.showNotification('Please input age', 'warning');
             return;
-        }
-        else if (insert_param['address'] === '' || insert_param['address'] === null ){
+        } else if (insert_param['address'] === '' || insert_param['address'] === null) {
             this.notificationCmp.showNotification('Please input address', 'warning');
             return;
         }
-        return this.httpClient.post(this.url_insert, insert_param).subscribe(data => {
+        return this.httpClient.post(this.url_insert, insert_param,{headers: this.reqHeader}).subscribe(response => {
             // this.dataSource = data['result'];
             // Assign the data to the data source for the table to render
-            console.log('data response insert', data);
-            if (data['code'] === 0){
+            if (response['code'] === 999){
+                this.notificationCmp.showNotification('Authentication failed', 'warning');
+            }
+            else if (response['code'] === 0) {
                 this.notificationCmp.showNotification('Add client successfully', 'success');
                 this.getClientData();
             }
@@ -177,12 +194,14 @@ export class TableListComponent implements AfterViewInit  {
         }, error => this.isLoading = false);
     }
 
-    handleDeleteClient(){
-        return this.httpClient.post(this.url_delete, this.row_selected).subscribe(data => {
+    handleDeleteClient() {
+        return this.httpClient.post(this.url_delete, this.row_selected,{headers: this.reqHeader}).subscribe(response => {
             // this.dataSource = data['result'];
             // Assign the data to the data source for the table to render
-            console.log('data response insert', data);
-            if (data['code'] === 0){
+            if (response['code'] === 999){
+                this.notificationCmp.showNotification('Authentication failed', 'warning');
+            }
+            else if (response['code'] === 0) {
                 this.notificationCmp.showNotification('Delete client successfully', 'success');
                 this.getClientData();
             }
@@ -206,16 +225,18 @@ export class TableListComponent implements AfterViewInit  {
         } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
             return 'by clicking on a backdrop';
         } else {
-            return  `with: ${reason}`;
+            return `with: ${reason}`;
         }
     };
 
-    handleEditClient(){
-        return this.httpClient.post(this.url_edit, this.row_selected).subscribe(data => {
+    handleEditClient() {
+        return this.httpClient.post(this.url_edit, this.row_selected,{headers: this.reqHeader}).subscribe(response => {
             // this.dataSource = data['result'];
             // Assign the data to the data source for the table to render
-            console.log('data response save client', data);
-            if (data['code'] === 0){
+            if (response['code'] === 999){
+                this.notificationCmp.showNotification('Authentication failed', 'warning');
+            }
+            else if (response['code'] === 0) {
                 this.notificationCmp.showNotification('Save client successfully', 'success');
                 this.getClientData();
                 this.modalService.dismissAll()
