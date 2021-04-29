@@ -1,0 +1,172 @@
+<div class="main-content">
+    <div class="container-fluid">
+        <div *ngIf="isLoading"
+             style="display: flex; justify-content: center; align-items: center; background: white;">
+            <mat-progress-spinner
+                    color="primary"
+                    mode="indeterminate">
+            </mat-progress-spinner>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="mat-elevation-z8">
+                    <mat-table #table [dataSource]="dataSource">
+                        <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.name">
+                            <mat-header-cell *cdkHeaderCellDef>{{ column.label }}</mat-header-cell>
+                            <mat-cell *cdkCellDef="let row">{{ column.cell(row) }}</mat-cell>
+                        </ng-container>
+                        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: displayedColumns;" (click)="getSelectedRow(row)"
+                                 [ngClass]="{'highlight': selectedRowIndex == row['account_number']}"
+                        ></mat-row>
+                    </mat-table>
+                    <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+                </div>
+            </div>
+        </div>
+        <div class="row pt-2">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-danger">
+                        <h4 class="card-title">Search</h4>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Fist Name" type="text" name="first_name"
+                                               [(ngModel)]="first_name">
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Last Name" type="text" name="last_name"
+                                               [(ngModel)]="last_name">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Age" type="text" name="age"
+                                               [(ngModel)]="age">
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Address" type="text" name="address"
+                                               [(ngModel)]="address">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Email" type="text" name="email"
+                                               [(ngModel)]="email">
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Employer" type="text" name="employer"
+                                               [(ngModel)]="employer">
+                                    </mat-form-field>
+                                </div>
+
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <mat-form-field class="example-full-width">
+                                        <input matInput placeholder="Balance" type="text" name="balance"
+                                               [(ngModel)]="balance">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <button mat-raised-button type="submit" class="btn btn-danger pull-right" (click)="handleDeleteClient()" [disabled]="!row_selected">Delete
+                            </button>
+                            <button mat-raised-button type="submit" class="btn btn-warning pull-right" (click)="handleOpenClientDetailModal(mymodal)" [disabled]="!row_selected">Edit
+                            </button>
+                            <button mat-raised-button type="submit" class="btn btn-info pull-right" (click)="handleCreateClient()">Create
+                            </button>
+                            <button mat-raised-button type="submit" class="btn btn-primary pull-right" (click)="handleSearch()">Search
+                            </button>
+
+                            <div class="clearfix"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ng-template #mymodal let-modal>
+            <div class="modal-header">
+                <h4 class="modal-title" id="modal-basic-title">Bootstrap Modal</h4>
+                <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field class="example-full-width">
+                                <input matInput placeholder="Fist Name" type="text" name="first_name"
+                                       [(ngModel)]="obj_edit_client.firstname">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field class="example-full-width">
+                                <input matInput placeholder="Last Name" type="text" name="last_name"
+                                       [(ngModel)]="obj_edit_client.lastname">
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field class="example-full-width">
+                                <input matInput placeholder="Age" type="text" name="age"
+                                       [(ngModel)]="obj_edit_client.age">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field class="example-full-width">
+                                <input matInput placeholder="Address" type="text" name="address"
+                                       [(ngModel)]="obj_edit_client.address">
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field class="example-full-width">
+                                <input matInput placeholder="Email" type="text" name="email"
+                                       [(ngModel)]="obj_edit_client.email">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field class="example-full-width">
+                                <input matInput placeholder="Employer" type="text" name="employer"
+                                       [(ngModel)]="obj_edit_client.employer">
+                            </mat-form-field>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field class="example-full-width">
+                                <input matInput placeholder="Balance" type="text" name="balance"
+                                       [(ngModel)]="obj_edit_client.balance">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" (click)="handleEditClient()">Save</button>
+            </div>
+        </ng-template>
+
+    </div>
+</div>
