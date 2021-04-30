@@ -93,6 +93,7 @@ def insert_client():
         return jsonify({'result': 999})
     else:
         data_input = request.json
+        data_input['account_number'] = mycol.find().count()+1,
         mycol.insert(data_input)
         response_code = 0
         return jsonify({'code': response_code})
