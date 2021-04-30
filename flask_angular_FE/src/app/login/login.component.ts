@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit {
   }
 
   handleLogin(){
+    console.log("balance", this.obj_login['balance']);
     if (this.obj_login['email'] === '' || this.obj_login['email'] === null ){
       this.notificationCmp.showNotification('Please input email', 'warning');
       return;
@@ -33,7 +34,13 @@ export class LoginComponent implements OnInit {
       this.notificationCmp.showNotification('Please input balance', 'warning');
       return;
     }
+    else if (/[a-zA-Z]/g.test(this.obj_login['balance'])) {
+      console.log("balance test", /[a-zA-Z]/g.test(this.obj_login['balance']));
+      this.notificationCmp.showNotification('Balance must be number only', 'warning');
+      return;
+    }
     else {
+      // this.obj_login.balance = this.obj_login.balance.replace(/[^0-9]/g,'');
       return this.httpClient.post(this.url_login, this.obj_login).subscribe(data => {
 
         // Assign the data to the data source for the table to render
